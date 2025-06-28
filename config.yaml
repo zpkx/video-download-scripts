@@ -1,0 +1,39 @@
+# yt-dlp 底层配置选项
+
+# 视频格式和质量设置
+format: "bestvideo[height>=1080]+bestaudio/best"
+merge_output_format: "mp4"
+
+# 元数据和字幕设置
+writeinfojson: true
+writesubtitles: true
+writeautomaticsub: true
+subtitleslangs: ["zh-CN", "zh-TW", "en"]
+embed_subs: true
+writedesctription: true
+writethumbnail: true
+
+# 错误处理和重试设置
+ignoreerrors: true
+extract_flat: false
+playlistend: 50
+geo_bypass: true
+retries: 3
+fragment_retries: 3
+skip_unavailable_fragments: true
+keep_fragments: false
+
+# 后处理器设置
+postprocessors:
+  - key: "FFmpegVideoConvertor"
+    preferedformat: "mp4"
+  - key: "EmbedSubtitle"
+  - key: "FFmpegMetadata"
+
+
+# 全局设置
+global_settings:
+  default_quality: "best"
+  default_delay_range: [5, 10]
+  default_output_path: "./downloads/默认"
+  cookies_file: "cookies.txt"

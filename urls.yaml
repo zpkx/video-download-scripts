@@ -1,0 +1,18 @@
+# 视频下载配置文件 (YAML格式)
+categories:
+  凡人修仙传:
+    output_path: "./downloads/凡人修仙传"
+    urls:
+      - https://www.bilibili.com/bangumi/play/ep1231557/
+    
+  灵笼第二季:
+    output_path: "./downloads/灵笼"
+    urls:
+      - https://www.bilibili.com/bangumi/play/ep1633643/
+      # - https://www.bilibili.com/bangumi/play/ep1633644/
+      # - https://www.bilibili.com/bangumi/play/ep1633645/
+      # - https://www.bilibili.com/bangumi/play/ep1633646/
+      # - https://www.bilibili.com/bangumi/play/ep1633647/
+      # - https://www.bilibili.com/bangumi/play/ep1633648/
+      # - https://www.bilibili.com/bangumi/play/ep1633649/
+
