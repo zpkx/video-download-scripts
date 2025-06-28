@@ -5,7 +5,7 @@ format: "bestvideo[height>=1080]+bestaudio/best"
 merge_output_format: "mp4"
 
 # 元数据和字幕设置
-writeinfojson: true
+writeinfojson: false
 writesubtitles: true
 writeautomaticsub: true
 subtitleslangs: ["zh-CN", "zh-TW", "en"]
@@ -27,8 +27,8 @@ keep_fragments: false
 postprocessors:
   - key: "FFmpegVideoConvertor"
     preferedformat: "mp4"
-  - key: "EmbedSubtitle"
-  - key: "FFmpegMetadata"
+  - key: "EmbedThumbnail"
+  # - key: "EmbedSubtitle"
 
 
 # 全局设置

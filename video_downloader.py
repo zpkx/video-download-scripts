@@ -32,7 +32,7 @@ class VideoDownloader:
         return {
             "format": "bestvideo[height>=720]+bestaudio/best[acodec!=none]",
             "merge_output_format": "mp4",
-            "writeinfojson": True,
+            "writeinfojson": False,
             "writesubtitles": True,
             "writeautomaticsub": True,
             "subtitleslangs": ["zh-CN", "zh-TW", "en"],
