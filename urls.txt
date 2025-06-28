@@ -1,0 +1,12 @@
+# Video URLs to download (one per line)
+# Lines starting with # are treated as comments and ignored
+
+# Example Bilibili URLs:
+# https://www.bilibili.com/video/BV1xx411c7mD
+# https://www.bilibili.com/video/BV1yy4y1b7t8
+
+# Example YouTube URLs:
+# https://www.youtube.com/watch?v=dQw4w9WgXcQ
+# https://www.youtube.com/playlist?list=PLrAXtmRdnEQy6nuLMHjMZOz59Ez3ko0aP
+
+# Add your URLs below:
