@@ -35,5 +35,5 @@ postprocessors:
 global_settings:
   default_quality: "best"
   default_delay_range: [5, 10]
-  default_output_path: "./downloads/"
+  default_output_path: "/downloads/"
   cookies_file: "config/cookies.txt"

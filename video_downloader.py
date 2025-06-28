@@ -108,7 +108,10 @@ class VideoDownloader:
             delay_range: Range for random delays between downloads
 
         Returns:
-            Dictionary with successful and failed downloads
+            Dictionary with:
+            - successful: List of successfully downloaded URLs
+            - failed: List of failed URLs
+            - downloaded_files: List of dicts with file info (url, file_path, title)
         """
         # Create output directory
         os.makedirs(output_dir, exist_ok=True)
@@ -140,6 +143,23 @@ class VideoDownloader:
 
         successful_downloads = []
         failed_downloads = []
+        downloaded_files = []  # Store information about downloaded files
+
+        # Hook function to capture downloaded file paths
+        def download_hook(d):
+            if d["status"] == "finished":
+                file_path = d["filename"]
+                downloaded_files.append(
+                    {
+                        "url": d.get("info_dict", {}).get("webpage_url", "Unknown"),
+                        "file_path": os.path.abspath(file_path),
+                        "title": d.get("info_dict", {}).get("title", "Unknown"),
+                    }
+                )
+                logger.info(f"Downloaded file: {os.path.abspath(file_path)}")
+
+        # Add the hook to yt-dlp options
+        ydl_opts["progress_hooks"] = [download_hook]
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             for i, url in enumerate(urls, 1):
@@ -159,7 +179,11 @@ class VideoDownloader:
                     logger.error(f"Error downloading {url}: {e}")
                     failed_downloads.append(url)
 
-        return {"successful": successful_downloads, "failed": failed_downloads}
+        return {
+            "successful": successful_downloads,
+            "failed": failed_downloads,
+            "downloaded_files": downloaded_files,
+        }
 
     def get_video_info(self, url: str) -> Optional[Dict[str, Any]]:
         """Get video information without downloading"""
@@ -400,6 +424,14 @@ def download_by_categories(
         print(f"✅ Successful: {len(result['successful'])}")
         if len(result["failed"]) > 0:
             print(f"❌ Failed: {len(result['failed'])}")
+
+        # Print downloaded files with full paths
+        if result.get("downloaded_files"):
+            print("\n📁 Downloaded files:")
+            for file_info in result["downloaded_files"]:
+                print(f"  📄 {file_info['title']}")
+                print(f"     🔗 {file_info['file_path']}")
+
         print("-" * 50)
 
     return total_results
@@ -489,6 +521,13 @@ def process_categorized_downloads(
             print(f"✅ Successful: {len(result['successful'])}")
             if len(result["failed"]) > 0:
                 print(f"❌ Failed: {len(result['failed'])}")
+
+            # Print downloaded files with full paths
+            if result.get("downloaded_files"):
+                print("\n📁 Downloaded files:")
+                for file_info in result["downloaded_files"]:
+                    print(f"  📄 {file_info['title']}")
+                    print(f"     🔗 {file_info['file_path']}")
 
             if result["failed"]:
                 print(f"\n❌ Failed downloads in '{category_name}':")
@@ -667,6 +706,13 @@ def main():
             print(f"Successful: {len(result['successful'])}")
             if len(result["failed"]) > 0:
                 print(f"Failed: {len(result['failed'])}")
+
+            # Print downloaded files with full paths
+            if result.get("downloaded_files"):
+                print("\n📁 Downloaded files:")
+                for file_info in result["downloaded_files"]:
+                    print(f"  📄 {file_info['title']}")
+                    print(f"     🔗 {file_info['file_path']}")
 
             if result["failed"]:
                 print("\nFailed downloads:")
