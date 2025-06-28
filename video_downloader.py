@@ -396,7 +396,8 @@ def download_by_categories(downloader: 'VideoDownloader', categories: Dict[str, 
         # Print category summary
         print(f"\n📊 Category '{category_name}' Summary:")
         print(f"✅ Successful: {len(result['successful'])}")
-        print(f"❌ Failed: {len(result['failed'])}")
+        if len(result['failed']) > 0:
+            print(f"❌ Failed: {len(result['failed'])}")
         print("-" * 50)
 
     return total_results
@@ -470,7 +471,8 @@ def process_categorized_downloads(downloader: VideoDownloader, categories: Dict[
             # Print category summary
             print(f"\n📋 Category '{category_name}' Summary:")
             print(f"✅ Successful: {len(result['successful'])}")
-            print(f"❌ Failed: {len(result['failed'])}")
+            if len(result['failed']) > 0:
+                print(f"❌ Failed: {len(result['failed'])}")
 
             if result["failed"]:
                 print(f"\n❌ Failed downloads in '{category_name}':")
@@ -485,7 +487,8 @@ def process_categorized_downloads(downloader: VideoDownloader, categories: Dict[
         print(
             f"📁 Categories processed: {len([c for c in categories.values() if c.get('urls')])}")
         print(f"✅ Total successful: {total_successful}")
-        print(f"❌ Total failed: {total_failed}")
+        if (total_failed) > 0:
+            print(f"❌ Total failed: {total_failed}")
         print(f"{'='*60}")
 
     return {
@@ -614,7 +617,8 @@ def main():
             print(f"\n{'='*50}")
             print("Download Summary:")
             print(f"Successful: {len(result['successful'])}")
-            print(f"Failed: {len(result['failed'])}")
+            if len(result['failed']) > 0:
+                print(f"Failed: {len(result['failed'])}")
 
             if result["failed"]:
                 print("\nFailed downloads:")
