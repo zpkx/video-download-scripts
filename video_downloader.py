@@ -14,14 +14,15 @@ import yaml
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler(
-        "video_download.log"), logging.StreamHandler()],
+    handlers=[logging.FileHandler("video_download.log"), logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
 
 
 class VideoDownloader:
-    """Enhanced video downloader using yt-dlp with improved features"""
+    """Enhanced vide        print(f"{'='*60}")
+    print("🎯 OVERALL DOWNLOAD SUMMARY")
+    print(f"{'='*60}")ownloader using yt-dlp with improved features"""
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
@@ -48,8 +49,8 @@ class VideoDownloader:
     def _get_cookies_file(self) -> Optional[str]:
         """Find cookies file in common locations"""
         possible_paths = [
+            "config/cookies.txt",  # Check config folder first
             "cookies.txt",
-            "www.bilibili.com_cookies.txt",
             os.path.expanduser("~/cookies.txt"),
             os.path.expanduser("~/Downloads/cookies.txt"),
         ]
@@ -59,8 +60,7 @@ class VideoDownloader:
                 logger.info(f"Found cookies file: {path}")
                 return path
 
-        logger.warning(
-            "No cookies file found. Some videos may not be accessible.")
+        logger.warning("No cookies file found. Some videos may not be accessible.")
         return None
 
     def _get_ffmpeg_location(self) -> Optional[str]:
@@ -152,8 +152,7 @@ class VideoDownloader:
                     # Add delay between downloads to avoid rate limiting
                     if i < len(urls):
                         delay = random.randint(*delay_range)
-                        logger.info(
-                            f"Waiting {delay} seconds before next download...")
+                        logger.info(f"Waiting {delay} seconds before next download...")
                         time.sleep(delay)
 
                 except Exception as e:
@@ -243,10 +242,12 @@ def load_categorized_urls_from_file(file_path: str) -> Dict[str, Dict[str, Any]]
                         if current_category not in categories:
                             categories[current_category] = {
                                 "urls": [],
-                                "output_path": current_output_path
+                                "output_path": current_output_path,
                             }
                         else:
-                            categories[current_category]["output_path"] = current_output_path
+                            categories[current_category][
+                                "output_path"
+                            ] = current_output_path
 
                 # Skip other comments
                 elif line.startswith("#"):
@@ -257,17 +258,19 @@ def load_categorized_urls_from_file(file_path: str) -> Dict[str, Dict[str, Any]]
                     if current_category not in categories:
                         categories[current_category] = {
                             "urls": [],
-                            "output_path": current_output_path
+                            "output_path": current_output_path,
                         }
                     categories[current_category]["urls"].append(line)
 
         # Log summary
         total_urls = sum(len(cat["urls"]) for cat in categories.values())
         logger.info(
-            f"Loaded {total_urls} URLs in {len(categories)} categories from {file_path}")
+            f"Loaded {total_urls} URLs in {len(categories)} categories from {file_path}"
+        )
         for cat_name, cat_data in categories.items():
             logger.info(
-                f"  - {cat_name}: {len(cat_data['urls'])} URLs → {cat_data['output_path']}")
+                f"  - {cat_name}: {len(cat_data['urls'])} URLs → {cat_data['output_path']}"
+            )
 
     except Exception as e:
         logger.error(f"Error loading categorized URLs from file: {e}")
@@ -291,7 +294,7 @@ def parse_config_file(file_path: str) -> Dict[str, Any]:
     # Extract only yt-dlp specific settings, not our custom categories
     ytdlp_config = {}
     for key, value in config.items():
-        if key not in ['categories', 'global_settings']:
+        if key not in ["categories", "global_settings"]:
             ytdlp_config[key] = value
 
     return ytdlp_config
@@ -321,105 +324,106 @@ def load_categorized_urls(file_path: str) -> Dict[str, Dict[str, Any]]:
     if not config:
         return {}
 
-    categories = config.get('categories', {})
-    global_settings = config.get('global_settings', {})
+    categories = config.get("categories", {})
+    global_settings = config.get("global_settings", {})
 
     # Apply global settings to each category if not specified
     for category_name, category_data in categories.items():
         for setting, default_value in global_settings.items():
-            if setting not in category_data and setting != 'default_output_path':
+            if setting not in category_data and setting != "default_output_path":
                 category_data[setting] = default_value
 
         # Set default output path if not specified
-        if 'output_path' not in category_data:
-            default_output = global_settings.get(
-                'default_output_path', './downloads')
-            category_data['output_path'] = os.path.join(
-                default_output, category_name)
+        if "output_path" not in category_data:
+            default_output = global_settings.get("default_output_path", "./downloads")
+            category_data["output_path"] = os.path.join(default_output, category_name)
 
     return categories
 
 
-def download_by_categories(downloader: 'VideoDownloader', categories: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+def download_by_categories(
+    downloader: "VideoDownloader", categories: Dict[str, Dict[str, Any]]
+) -> Dict[str, Any]:
     """Download videos organized by categories"""
-    total_results = {
-        'successful': [],
-        'failed': [],
-        'category_results': {}
-    }
+    total_results = {"successful": [], "failed": [], "category_results": {}}
 
     for category_name, category_config in categories.items():
-        urls = category_config.get('urls', [])
+        urls = category_config.get("urls", [])
         if not urls:
             logger.info(f"No URLs found for category: {category_name}")
             continue
 
         logger.info(f"\n🎯 Processing category: {category_name}")
         logger.info(
-            f"📁 Output path: {category_config.get('output_path', './downloads')}")
+            f"📁 Output path: {category_config.get('output_path', './downloads')}"
+        )
         logger.info(f"🎬 URLs to download: {len(urls)}")
 
         # Extract download parameters from category config
-        output_dir = category_config.get('output_path', './downloads')
-        quality = category_config.get('quality', 'best')
-        delay_range = tuple(category_config.get('delay_range', [5, 10]))
+        output_dir = category_config.get("output_path", "./downloads")
+        quality = category_config.get("quality", "best")
+        delay_range = tuple(category_config.get("delay_range", [5, 10]))
 
         # Update downloader config for this category
         category_downloader_config = {}
 
         # Handle audio extraction
-        if category_config.get('extract_audio', False):
-            category_downloader_config['extractaudio'] = True
-            category_downloader_config['audioformat'] = category_config.get(
-                'audio_format', 'mp3')
+        if category_config.get("extract_audio", False):
+            category_downloader_config["extractaudio"] = True
+            category_downloader_config["audioformat"] = category_config.get(
+                "audio_format", "mp3"
+            )
 
         # Handle subtitle languages
-        if 'subtitle_langs' in category_config:
-            category_downloader_config['subtitleslangs'] = category_config['subtitle_langs']
+        if "subtitle_langs" in category_config:
+            category_downloader_config["subtitleslangs"] = category_config[
+                "subtitle_langs"
+            ]
 
         # Handle thumbnail embedding
-        if category_config.get('embed_thumbnail', False):
-            category_downloader_config['embedthumbnail'] = True
+        if category_config.get("embed_thumbnail", False):
+            category_downloader_config["embedthumbnail"] = True
 
         # Create a new downloader instance with category-specific config
         temp_downloader = VideoDownloader(category_downloader_config)
 
         # Download videos for this category
-        result = temp_downloader.download_videos(
-            urls, output_dir, quality, delay_range)
+        result = temp_downloader.download_videos(urls, output_dir, quality, delay_range)
 
         # Store category results
-        total_results['category_results'][category_name] = result
-        total_results['successful'].extend(result['successful'])
-        total_results['failed'].extend(result['failed'])
+        total_results["category_results"][category_name] = result
+        total_results["successful"].extend(result["successful"])
+        total_results["failed"].extend(result["failed"])
 
         # Print category summary
         print(f"\n📊 Category '{category_name}' Summary:")
         print(f"✅ Successful: {len(result['successful'])}")
-        if len(result['failed']) > 0:
+        if len(result["failed"]) > 0:
             print(f"❌ Failed: {len(result['failed'])}")
         print("-" * 50)
 
     return total_results
 
 
-def process_categorized_downloads(downloader: VideoDownloader, categories: Dict[str, Dict[str, Any]], args) -> Dict[str, Any]:
+def process_categorized_downloads(
+    downloader: VideoDownloader, categories: Dict[str, Dict[str, Any]], args
+) -> Dict[str, Any]:
     """Process downloads for all categories from YAML config"""
     total_successful = 0
     total_failed = 0
     category_results = {}
 
     for category_name, category_data in categories.items():
-        urls = category_data.get('urls', [])
+        urls = category_data.get("urls", [])
         if not urls:
             logger.info(f"No URLs in category '{category_name}', skipping...")
             continue
 
-        output_path = category_data.get(
-            'output_path', f"./downloads/{category_name}")
-        quality = category_data.get('quality', args.quality)
-        delay_range = tuple(category_data.get(
-            'delay_range', [args.delay_seconds, args.delay_max]))
+        output_path = category_data.get("output_path", f"./downloads/{category_name}")
+        quality = category_data.get("quality", args.quality)
+        delay_range = tuple(
+            category_data.get("delay_range", [args.delay_seconds, args.delay_max])
+        )
 
         print(f"\n{'='*60}")
         print(f"📁 Processing Category: {category_name}")
@@ -433,12 +437,22 @@ def process_categorized_downloads(downloader: VideoDownloader, categories: Dict[
             # Just extract info for this category
             for i, url in enumerate(urls, 1):
                 info = downloader.get_video_info(url)
+                # print(f"\n{'='*80}")
+                # print("RAW INFO OBJECT:")
+                # print(f"{'='*80}")
+                # print(json.dumps(info, indent=2, ensure_ascii=False, default=str))
+                # print(f"{'='*80}")
                 if info:
                     print(f"\n[{category_name}] Video {i}/{len(urls)}")
                     print(f"Title: {info.get('title', 'N/A')}")
-                    print(f"Uploader: {info.get('uploader', 'N/A')}")
-                    print(f"Duration: {info.get('duration', 'N/A')} seconds")
-                    print(f"View count: {info.get('view_count', 'N/A')}")
+                    print(f"Season: {info.get('season', 'N/A')}")
+                    duration = info.get("duration")
+                    if duration is not None:
+                        minutes = int(duration) // 60
+                        seconds = int(duration) % 60
+                        print(f"Duration: {minutes}m {seconds}s")
+                    else:
+                        print("Duration: N/A")
                     print(f"URL: {url}")
                     print("-" * 50)
         else:
@@ -446,32 +460,34 @@ def process_categorized_downloads(downloader: VideoDownloader, categories: Dict[
             category_config = downloader.config.copy()
 
             # Apply category-specific settings
-            if category_data.get('extract_audio', False):
-                category_config['extractaudio'] = True
-                category_config['audioformat'] = category_data.get(
-                    'audio_format', 'mp3')
+            if category_data.get("extract_audio", False):
+                category_config["extractaudio"] = True
+                category_config["audioformat"] = category_data.get(
+                    "audio_format", "mp3"
+                )
 
-            if 'subtitle_langs' in category_data:
-                category_config['subtitleslangs'] = category_data['subtitle_langs']
+            if "subtitle_langs" in category_data:
+                category_config["subtitleslangs"] = category_data["subtitle_langs"]
 
-            if category_data.get('embed_thumbnail', False):
-                category_config['embedthumbnail'] = True
+            if category_data.get("embed_thumbnail", False):
+                category_config["embedthumbnail"] = True
 
             # Create temporary downloader with category config
             temp_downloader = VideoDownloader(category_config)
 
             # Download videos for this category
             result = temp_downloader.download_videos(
-                urls, output_path, quality, delay_range)
+                urls, output_path, quality, delay_range
+            )
 
             category_results[category_name] = result
-            total_successful += len(result['successful'])
-            total_failed += len(result['failed'])
+            total_successful += len(result["successful"])
+            total_failed += len(result["failed"])
 
             # Print category summary
             print(f"\n📋 Category '{category_name}' Summary:")
             print(f"✅ Successful: {len(result['successful'])}")
-            if len(result['failed']) > 0:
+            if len(result["failed"]) > 0:
                 print(f"❌ Failed: {len(result['failed'])}")
 
             if result["failed"]:
@@ -482,19 +498,20 @@ def process_categorized_downloads(downloader: VideoDownloader, categories: Dict[
     if not args.info_only:
         # Print overall summary
         print(f"\n{'='*60}")
-        print(f"🎯 OVERALL DOWNLOAD SUMMARY")
+        print("🎯 OVERALL DOWNLOAD SUMMARY")
         print(f"{'='*60}")
         print(
-            f"📁 Categories processed: {len([c for c in categories.values() if c.get('urls')])}")
+            f"📁 Categories processed: {len([c for c in categories.values() if c.get('urls')])}"
+        )
         print(f"✅ Total successful: {total_successful}")
         if (total_failed) > 0:
             print(f"❌ Total failed: {total_failed}")
         print(f"{'='*60}")
 
     return {
-        'successful': total_successful,
-        'failed': total_failed,
-        'category_results': category_results
+        "successful": total_successful,
+        "failed": total_failed,
+        "category_results": category_results,
     }
 
 
@@ -505,7 +522,10 @@ def main():
     )
     parser.add_argument("urls", nargs="*", help="Video URLs to download")
     parser.add_argument(
-        "-f", "--file", help="YAML config file or plain text URLs file")
+        "-f",
+        "--file",
+        help="YAML config file or plain text URLs file (auto-detects config/urls.yaml if not specified)",
+    )
     parser.add_argument(
         "-o", "--output", default="./downloads", help="Output directory"
     )
@@ -532,7 +552,9 @@ def main():
         "--info-only", action="store_true", help="Extract video info only (no download)"
     )
     parser.add_argument(
-        "--config", help="YAML config file for yt-dlp options (auto-detects config.yaml if not specified)")
+        "--config",
+        help="YAML config file for yt-dlp options (auto-detects config/config.yaml if not specified)",
+    )
 
     args = parser.parse_args()
 
@@ -542,7 +564,12 @@ def main():
 
     # Auto-detect config.yaml if no config specified
     if not config_file:
-        possible_config_files = ['config.yaml', 'config.yml']
+        possible_config_files = [
+            "config/config.yaml",
+            "config/config.yml",
+            "config.yaml",
+            "config.yml",
+        ]
         for possible_file in possible_config_files:
             if os.path.exists(possible_file):
                 config_file = possible_file
@@ -555,7 +582,8 @@ def main():
             config = parse_config_file(config_file)
             if config:
                 logger.info(
-                    f"Loaded {len(config)} configuration options from {config_file}")
+                    f"Loaded {len(config)} configuration options from {config_file}"
+                )
         except Exception as e:
             logger.error(f"Error loading config file {config_file}: {e}")
 
@@ -566,15 +594,37 @@ def main():
     if args.file:
         # Auto-detect file format
         file_path = Path(args.file)
-        if file_path.suffix.lower() in ['.yaml', '.yml']:
+        if file_path.suffix.lower() in [".yaml", ".yml"]:
             # Load YAML config file
             categories = load_categorized_urls(args.file)
             if categories:
-                logger.info(
-                    f"Loaded YAML config with {len(categories)} categories")
+                logger.info(f"Loaded YAML config with {len(categories)} categories")
         else:
             # Load plain text URLs file
             urls.extend(load_urls_from_file(args.file))
+    else:
+        # Auto-detect urls.yaml if no file specified
+        possible_url_files = [
+            "config/urls.yaml",
+            "config/urls.yml",
+            "urls.yaml",
+            "urls.yml",
+        ]
+        for possible_file in possible_url_files:
+            if os.path.exists(possible_file):
+                logger.info(f"Auto-detected URLs file: {possible_file}")
+                file_path = Path(possible_file)
+                if file_path.suffix.lower() in [".yaml", ".yml"]:
+                    # Load YAML config file
+                    categories = load_categorized_urls(possible_file)
+                    if categories:
+                        logger.info(
+                            f"Loaded YAML config with {len(categories)} categories"
+                        )
+                else:
+                    # Load plain text URLs file
+                    urls.extend(load_urls_from_file(possible_file))
+                break
 
     if not urls and not categories:
         logger.error("No URLs provided. Use --help for usage information.")
@@ -595,10 +645,9 @@ def main():
                 if info:
                     # Print raw info object for debugging
                     print(f"\n{'='*80}")
-                    print(f"RAW INFO OBJECT:")
+                    print("RAW INFO OBJECT:")
                     print(f"{'='*80}")
-                    print(json.dumps(info, indent=2,
-                          ensure_ascii=False, default=str))
+                    print(json.dumps(info, indent=2, ensure_ascii=False, default=str))
                     print(f"{'='*80}")
 
                     print(f"\nTitle: {info.get('title', 'N/A')}")
@@ -609,15 +658,14 @@ def main():
         else:
             # Download videos
             result = downloader.download_videos(
-                urls, args.output, args.quality, (
-                    args.delay_seconds, args.delay_max)
+                urls, args.output, args.quality, (args.delay_seconds, args.delay_max)
             )
 
             # Print summary
             print(f"\n{'='*50}")
             print("Download Summary:")
             print(f"Successful: {len(result['successful'])}")
-            if len(result['failed']) > 0:
+            if len(result["failed"]) > 0:
                 print(f"Failed: {len(result['failed'])}")
 
             if result["failed"]:
@@ -627,17 +675,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # Example usage when run directly
-    if len(sys.argv) == 1:
-        # Default example for testing
-        video_urls = ["https://www.bilibili.com/video/av114543489451440?t=1.2"]
-        output_dir = "./downloads"
-
-        downloader = VideoDownloader()
-        result = downloader.download_videos(video_urls, output_dir)
-
-        print("Download completed:")
-        print(f"Successful: {len(result['successful'])}")
-        print(f"Failed: {len(result['failed'])}")
-    else:
-        main()
+    main()

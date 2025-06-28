@@ -6,8 +6,8 @@ categories:
       # - https://www.bilibili.com/bangumi/play/ep1231557/
     
   灵笼第二季:
-    output_path: "/mnt/nas_media/动画/灵笼/第二季"
+    # output_path: "/mnt/nas_media/动画/灵笼/第二季"
     urls:
-      # - https://www.bilibili.com/bangumi/play/ep1633645/
+      - https://www.bilibili.com/bangumi/play/ep1633645/
 
 

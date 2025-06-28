@@ -11,7 +11,7 @@ writeautomaticsub: true
 subtitleslangs: ["zh-CN", "zh-TW", "en"]
 embed_subs: true
 writedesctription: true
-writethumbnail: false
+writethumbnail: true
 
 # 错误处理和重试设置
 ignoreerrors: true
@@ -27,7 +27,7 @@ keep_fragments: false
 postprocessors:
   - key: "FFmpegVideoConvertor"
     preferedformat: "mp4"
-  # - key: "EmbedThumbnail"
+  - key: "EmbedThumbnail"
   # - key: "EmbedSubtitle"
 
 
@@ -35,5 +35,5 @@ postprocessors:
 global_settings:
   default_quality: "best"
   default_delay_range: [5, 10]
-  default_output_path: "./downloads/默认"
-  cookies_file: "cookies.txt"
+  default_output_path: "./downloads/"
+  cookies_file: "config/cookies.txt"

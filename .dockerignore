@@ -1,0 +1,17 @@
+# Docker ignore file for video downloader
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.log
+.git
+.gitignore
+README.md
+使用说明.md
+.vscode/
+.devcontainer/
+downloads/
+*.tmp
+.DS_Store
+Thumbs.db

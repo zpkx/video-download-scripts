@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  video-downloader:
+    build: .
+    container_name: video-downloader
+    volumes:
+      # Mount downloads directory
+      - ./downloads:/downloads
+      # Mount config directory for config files
+      - ./config:/app/config
+      # Mount current directory for accessing local config files (backward compatibility)
+      - .:/app/local:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    working_dir: /app
+    # Override default command - examples:
+    # command: ["-f", "/app/config/urls.yaml"]
+    # command: ["--info-only", "-f", "/app/config/urls.yaml"]
+    # command: ["--config", "/app/config/config.yaml"]
+    # command: ["https://example.com/video"]
+    command: ["--help"]
+    restart: unless-stopped
+
+  # Alternative service for one-time runs
+  video-downloader-oneshot:
+    build: .
+    container_name: video-downloader-oneshot
+    volumes:
+      - ./downloads:/downloads
+      - ./config:/app/config
+      - .:/app/local:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    working_dir: /app
+    profiles:
+      - oneshot
+    # This service won't start by default (requires --profile oneshot)

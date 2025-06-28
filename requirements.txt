@@ -2,6 +2,9 @@
 yt-dlp>=2023.12.30
 requests>=2.31.0
 
+# For --embed-thumbnail
+mutagen>=1.47.0
+
 # YAML config file support
 PyYAML>=6.0.1
 

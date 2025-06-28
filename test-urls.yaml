@@ -1,0 +1,7 @@
+# 测试配置文件 - 仅用于验证功能
+categories:
+  测试:
+    output_path: "./downloads/test"
+    urls:
+      # 使用一个短视频进行测试 (这是一个示例URL，实际测试时请使用真实URL)
+      - https://www.bilibili.com/video/BV1GJ411x7h7  # 示例短视频
