@@ -5,7 +5,7 @@ services:
     container_name: video-downloader-watcher
     volumes:
       # Mount downloads directory
-      - ./downloads:/downloads
+      - ./downloads:/app/downloads
       # Mount config directory for config files
       - ./config:/app/config
     environment:
