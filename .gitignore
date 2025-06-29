@@ -3,3 +3,5 @@ __pycache__/
 cookies.txt
 *.log
 downloads/*
+logs/*
+!logs/.gitkeep

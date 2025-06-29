@@ -281,7 +281,8 @@ video-downloader/
 │   ├── urls.yaml          # Categorized URLs configuration
 │   └── cookies.txt        # Browser cookies (optional)
 ├── downloads/             # Default download directory
-└── video_download.log     # Download logs
+└── logs/                  # Log files directory
+    └── video_download.log # Download logs
 ```
 
 ## 🔧 Configuration Files
@@ -416,11 +417,13 @@ docker-compose run --rm video-downloader-oneshot -f /app/local/urls.yaml
 
 ## 📝 Logging
 
-All download activities are logged to `video_download.log` with timestamps and detailed information about:
+All download activities are logged to `logs/video_download.log` with timestamps and detailed information about:
 - Download progress
 - Errors and warnings
 - Configuration loading
 - File detection
+
+日志文件会自动创建在 `logs/` 目录中，这样可以更好地组织和管理日志文件。在 Docker 环境中，日志目录也会被正确挂载，确保日志持久化。
 
 ## 🚨 Troubleshooting
 
@@ -469,7 +472,7 @@ python video_downloader.py --info-only "https://example.com/test-video"
 
 ### Debug Mode
 
-For detailed debugging, check the `video_download.log` file or run with verbose output.
+For detailed debugging, check the `logs/video_download.log` file or run with verbose output.
 
 ## 📄 License
 

@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
 # Create a non-root user with configurable UID/GID
 RUN groupadd -g ${USER_GID} downloader && \
     useradd -m -u ${USER_UID} -g ${USER_GID} downloader && \
-    mkdir -p /app && \
+    mkdir -p /app /app/logs && \
     chown -R downloader:downloader /app
 
 # Set working directory

@@ -4,8 +4,11 @@
 
 set -e
 
-echo "🧪 测试 Docker UID/GID 配置..."
-echo ""
+echo "🧪 测试 Docker UID/GID 配置...echo "💡 使用建议:"
+echo "   1. 运行 './setup-env.sh' 设置环境变量"
+echo "   2. 使用 'docker-compose up -d video-downloader-watcher' 启动服务"
+echo "   3. 检查 downloads/ 目录中文件的权限是否正确"
+echo "   4. 检查 logs/ 目录中的日志文件"ho ""
 
 # 检查是否存在 .env 文件
 if [ -f .env ]; then
@@ -42,7 +45,7 @@ echo ""
 
 # 测试权限
 echo "🔒 测试文件权限..."
-mkdir -p test-downloads test-config
+mkdir -p test-downloads test-config test-logs
 
 # 创建测试配置
 echo "urls: []" > test-config/urls.yaml
@@ -51,20 +54,22 @@ echo "urls: []" > test-config/urls.yaml
 USER_UID=$(id -u) USER_GID=$(id -g) docker run --rm \
     -v $(pwd)/test-downloads:/app/downloads \
     -v $(pwd)/test-config:/app/config \
+    -v $(pwd)/test-logs:/app/logs \
     --user "$(id -u):$(id -g)" \
     video-downloader:local \
-    touch /app/downloads/test-file.txt
+    bash -c "touch /app/downloads/test-file.txt && touch /app/logs/test-log.txt"
 
-if [ -f test-downloads/test-file.txt ]; then
+if [ -f test-downloads/test-file.txt ] && [ -f test-logs/test-log.txt ]; then
     echo "✅ 文件权限测试通过"
-    echo "   创建的文件所有者: $(ls -la test-downloads/test-file.txt | awk '{print $3":"$4}')"
+    echo "   创建的下载文件所有者: $(ls -la test-downloads/test-file.txt | awk '{print $3":"$4}')"
+    echo "   创建的日志文件所有者: $(ls -la test-logs/test-log.txt | awk '{print $3":"$4}')"
     echo "   当前用户: $(whoami):$(id -gn)"
 else
     echo "❌ 文件权限测试失败"
 fi
 
 # 清理测试文件
-rm -rf test-downloads test-config
+rm -rf test-downloads test-config test-logs
 
 echo ""
 echo "🎉 测试完成!"
