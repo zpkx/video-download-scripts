@@ -85,7 +85,7 @@ jobs:
         echo "output_dir: downloads" > test-config/config.yaml
         
         # Test that the services can start (don't run actual downloads)
-        docker-compose -f docker-compose.yml config --quiet
+        docker compose -f docker-compose.yml config --quiet
         
         # Cleanup
         rm -rf test-config

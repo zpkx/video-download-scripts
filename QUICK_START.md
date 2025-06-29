@@ -25,7 +25,7 @@
 
 - **停止服务**: `Ctrl+C` 或 `docker-compose down`
 - **重新构建**: `docker-compose build`
-- **查看日志**: `docker-compose logs video-downloader-watcher`
+- **查看日志**: `docker-compose logs video-download-watcher`
 - **单次下载**: `docker-compose run --rm video-downloader-oneshot -f /app/config/urls.yaml`
 
 ## 文件结构

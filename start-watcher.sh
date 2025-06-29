@@ -31,7 +31,7 @@ fi
 
 # 构建并启动服务
 echo "🏗️  构建 Docker 镜像..."
-docker compose build video-downloader-watcher
+docker compose build video-download-watcher
 
 if [ $? -eq 0 ]; then
     echo ""
@@ -39,7 +39,7 @@ if [ $? -eq 0 ]; then
     echo "💡 提示: 编辑 config/urls.yaml 文件会自动触发下载"
     echo "🛑 按 Ctrl+C 停止服务"
     echo ""
-    docker compose up video-downloader-watcher
+    docker compose up video-download-watcher
 else
     echo "❌ 构建失败，请检查错误信息"
     exit 1

@@ -69,7 +69,7 @@ python video_downloader.py --dry-run "https://example.com/video"
 ./start-watcher.sh
 
 # Alternative: Use Docker Compose directly
-docker-compose up video-downloader-watcher
+docker-compose up video-download-watcher
 
 # Download using Docker (auto-detects config files)
 ./docker-run.sh download
@@ -241,7 +241,7 @@ python video_downloader.py "url1" "url2" "url3" --output ./my_downloads
 ## 🗂️ File Structure
 
 ```
-video-download-scripts/
+video-downloader/
 ├── video_downloader.py     # Main script
 ├── requirements.txt        # Python dependencies
 ├── Dockerfile             # Docker image definition
