@@ -4,6 +4,7 @@ services:
     # build: .
     image: ghcr.io/zpkx/video-downloader/video-download-watcher:latest
     container_name: video-download-watcher
+    user: "${USER_UID:-1000}:${USER_GID:-1000}"
     volumes:
       # Mount downloads directory
       - ./downloads:/app/downloads
@@ -18,8 +19,13 @@ services:
 
   # Manual downloader service (can be used with docker-compose run)
   video-downloader:
-    build: .
+    build: 
+      context: .
+      args:
+        USER_UID: "${USER_UID:-1000}"
+        USER_GID: "${USER_GID:-1000}"
     container_name: video-downloader
+    user: "${USER_UID:-1000}:${USER_GID:-1000}"
     volumes:
       # Mount downloads directory
       - ./downloads:/downloads
@@ -41,8 +47,13 @@ services:
 
   # Alternative service for one-time runs
   video-downloader-oneshot:
-    build: .
+    build: 
+      context: .
+      args:
+        USER_UID: "${USER_UID:-1000}"
+        USER_GID: "${USER_GID:-1000}"
     container_name: video-downloader-oneshot
+    user: "${USER_UID:-1000}:${USER_GID:-1000}"
     volumes:
       - ./downloads:/downloads
       - ./config:/app/config

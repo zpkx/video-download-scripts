@@ -5,6 +5,10 @@ FROM python:3.12-slim
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
+# Accept UID and GID as build arguments with default values
+ARG USER_UID=1000
+ARG USER_GID=1000
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     ffmpeg \
@@ -13,8 +17,9 @@ RUN apt-get update && apt-get install -y \
     inotify-tools \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user
-RUN useradd -m -u 1000 downloader && \
+# Create a non-root user with configurable UID/GID
+RUN groupadd -g ${USER_GID} downloader && \
+    useradd -m -u ${USER_UID} -g ${USER_GID} downloader && \
     mkdir -p /app && \
     chown -R downloader:downloader /app
 

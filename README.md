@@ -30,12 +30,22 @@ A powerful and flexible video downloader built with yt-dlp, featuring YAML-based
 
 For containerized deployment, you can use Docker:
 
-1. Build the Docker image:
+1. **设置用户权限** (推荐):
+   ```bash
+   # 自动设置当前用户的 UID/GID
+   ./setup-env.sh
+   
+   # 或者手动创建 .env 文件
+   echo "USER_UID=$(id -u)" > .env
+   echo "USER_GID=$(id -g)" >> .env
+   ```
+
+2. Build the Docker image:
    ```bash
    ./docker-run.sh build
    ```
 
-2. Run with Docker:
+3. Run with Docker:
    ```bash
    # Download from config/urls.yaml (auto-detected)
    ./docker-run.sh download
@@ -46,6 +56,24 @@ For containerized deployment, you can use Docker:
    # Get video info only
    ./docker-run.sh info
    ```
+
+#### 环境变量配置
+
+为了避免文件权限问题，项目支持通过环境变量设置 UID/GID：
+
+```bash
+# 方法 1: 使用脚本自动设置
+./setup-env.sh
+
+# 方法 2: 手动设置环境变量
+export USER_UID=$(id -u)
+export USER_GID=$(id -g)
+docker-compose up -d video-download-watcher
+
+# 方法 3: 在 .env 文件中设置
+cp .env.example .env
+# 编辑 .env 文件设置你的 UID/GID
+```
 
 ### Basic Usage
 
