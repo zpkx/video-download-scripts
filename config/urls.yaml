@@ -4,10 +4,10 @@ categories:
     # output_path: "/mnt/nas_media/动画/凡人修仙传"  # debian环境下的下载路径
     output_path: "./downloads/凡人修仙传"  # 本地和Docker环境下的下载路径
     urls:
-      - https://www.bilibili.com/bangumi/play/ep1231557/
+      # - https://www.bilibili.com/bangumi/play/ep1231557/
     
   灵笼第二季:
-    # output_path: "/mnt/nas_media/动画/灵笼/第二季"
+    output_path: "/mnt/nas_media/动画/灵笼/第二季"
     urls:
       # - https://www.bilibili.com/bangumi/play/ep1633645/
 

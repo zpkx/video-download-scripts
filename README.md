@@ -6,6 +6,7 @@ A powerful and flexible video downloader built with yt-dlp, featuring YAML-based
 
 - **YAML Configuration**: Easily edit both URL lists and yt-dlp options using YAML files
 - **Auto-Configuration**: Automatically detects and loads `config.yaml` and `urls.yaml` if present
+- **File Monitoring**: Automatically starts downloads when `urls.yaml` is modified (Docker mode)
 - **Categorized Downloads**: Organize downloads by category, each with its own output directory and settings
 - **Flexible Input**: Support for both YAML config files and command-line URLs
 - **Info-Only Mode**: Extract video metadata without downloading
@@ -64,15 +65,34 @@ python video_downloader.py --dry-run "https://example.com/video"
 
 #### Docker Usage
 ```bash
+# Start file monitoring service (automatically downloads when urls.yaml changes)
+./start-watcher.sh
+
+# Alternative: Use Docker Compose directly
+docker-compose up video-downloader-watcher
+
 # Download using Docker (auto-detects config files)
 ./docker-run.sh download
 
 # Get video info with Docker
 ./docker-run.sh info
 
+# Manual one-time download
+docker-compose run --rm video-downloader-oneshot -f /app/config/urls.yaml
+
 # Custom Docker command
 ./docker-run.sh run --dry-run "https://example.com/video"
 ```
+
+#### File Monitoring Feature
+The Docker setup includes a file monitoring service that automatically starts downloads when `config/urls.yaml` is modified:
+
+1. **Start the monitoring service**: `./start-watcher.sh`
+2. **Edit your URLs**: Modify `config/urls.yaml` to add/remove video URLs
+3. **Automatic download**: The service detects changes and starts downloading immediately
+4. **View logs**: Monitor the download progress in the terminal
+
+This is perfect for automated setups where you want to add URLs to a file and have them downloaded automatically.
 
 ## 📁 Configuration
 

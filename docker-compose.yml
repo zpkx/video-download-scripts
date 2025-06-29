@@ -1,6 +1,21 @@
-version: '3.8'
-
 services:
+  # File watcher service that monitors urls.yaml for changes
+  video-downloader-watcher:
+    build: .
+    container_name: video-downloader-watcher
+    volumes:
+      # Mount downloads directory
+      - ./downloads:/downloads
+      # Mount config directory for config files
+      - ./config:/app/config
+    environment:
+      - PYTHONUNBUFFERED=1
+    working_dir: /app
+    entrypoint: ["/bin/bash"]
+    command: ["/app/watch-and-download.sh"]
+    restart: unless-stopped
+
+  # Manual downloader service (can be used with docker-compose run)
   video-downloader:
     build: .
     container_name: video-downloader
@@ -20,7 +35,8 @@ services:
     # command: ["--config", "/app/config/config.yaml"]
     # command: ["https://example.com/video"]
     command: ["--help"]
-    restart: unless-stopped
+    profiles:
+      - manual
 
   # Alternative service for one-time runs
   video-downloader-oneshot:
