@@ -9,6 +9,8 @@ A powerful and flexible video downloader built with yt-dlp, featuring YAML-based
 - **Categorized Downloads**: Organize downloads into categories with separate output directories
 - **Flexible Input**: Support for both YAML config files and plain text URL lists
 - **Info-Only Mode**: Extract video metadata without downloading
+- **Dry-Run Mode**: Preview what would be downloaded without actually downloading
+- **Docker Support**: Containerized deployment with helper scripts
 - **Delay Management**: Configurable delays between downloads to avoid rate limiting
 - **Cookie Support**: Automatic detection of cookie files for authenticated content
 - **Comprehensive Logging**: Detailed logs for monitoring download progress
@@ -21,6 +23,27 @@ A powerful and flexible video downloader built with yt-dlp, featuring YAML-based
 2. Install dependencies:
    ```bash
    pip install -r requirements.txt
+   ```
+
+### Docker Installation (Alternative)
+
+For containerized deployment, you can use Docker:
+
+1. Build the Docker image:
+   ```bash
+   ./docker-run.sh build
+   ```
+
+2. Run with Docker:
+   ```bash
+   # Download from config/urls.yaml (auto-detected)
+   ./docker-run.sh download
+   
+   # Download from specific file
+   ./docker-run.sh download my-urls.yaml
+   
+   # Get video info only
+   ./docker-run.sh info
    ```
 
 ### Basic Usage
@@ -37,6 +60,21 @@ python video_downloader.py --file urls.txt
 
 # Get video info only (no download)
 python video_downloader.py --info-only "https://example.com/video"
+
+# Preview what would be downloaded (dry run)
+python video_downloader.py --dry-run "https://example.com/video"
+```
+
+#### Docker Usage
+```bash
+# Download using Docker (auto-detects config files)
+./docker-run.sh download
+
+# Get video info with Docker
+./docker-run.sh info
+
+# Custom Docker command
+./docker-run.sh run --dry-run "https://example.com/video"
 ```
 
 ## 📁 Configuration
@@ -98,7 +136,7 @@ fragment_retries: 3
 ```
 usage: video_downloader.py [-h] [-f FILE] [-o OUTPUT] 
                           [-q {low,medium,high,best}] [--delay-seconds DELAY_SECONDS]
-                          [--delay-max DELAY_MAX] [--info-only] [--config CONFIG]
+                          [--delay-max DELAY_MAX] [--info-only] [--dry-run] [--config CONFIG]
                           [urls ...]
 
 positional arguments:
@@ -116,6 +154,7 @@ options:
   --delay-max DELAY_MAX
                         Maximum delay between downloads in seconds (default: 15)
   --info-only           Extract video info only (no download)
+  --dry-run             Show what would be downloaded without actually downloading
   --config CONFIG       YAML config file for yt-dlp options (auto-detects config.yaml)
 ```
 
@@ -162,6 +201,17 @@ Extract metadata without downloading:
 python video_downloader.py --info-only "https://example.com/video"
 ```
 
+### Dry-Run Mode
+
+Preview what would be downloaded without actually downloading:
+```bash
+# See what would be downloaded
+python video_downloader.py --dry-run "https://example.com/video"
+
+# Preview categorized downloads
+python video_downloader.py --dry-run --file urls.yaml
+```
+
 ### Multiple URLs
 
 ```bash
@@ -174,9 +224,14 @@ python video_downloader.py "url1" "url2" "url3" --output ./my_downloads
 video-download-scripts/
 ├── video_downloader.py     # Main script
 ├── requirements.txt        # Python dependencies
-├── config.yaml            # yt-dlp options (auto-loaded)
-├── urls.yaml              # Categorized URLs configuration
-├── cookies.txt            # Browser cookies (optional)
+├── Dockerfile             # Docker image definition
+├── docker-compose.yml     # Docker Compose configuration
+├── docker-run.sh          # Docker helper script
+├── .dockerignore          # Docker build exclusions
+├── config/                # Configuration directory
+│   ├── config.yaml        # yt-dlp options (auto-loaded)
+│   ├── urls.yaml          # Categorized URLs configuration
+│   └── cookies.txt        # Browser cookies (optional)
 ├── downloads/             # Default download directory
 └── video_download.log     # Download logs
 ```
@@ -203,6 +258,19 @@ The script automatically detects cookies from these locations:
 
 ## 🛠️ Advanced Features
 
+### Dry-Run Testing
+Preview downloads without using bandwidth or storage:
+```bash
+# Test single URL
+python video_downloader.py --dry-run "https://example.com/video"
+
+# Test categorized downloads
+python video_downloader.py --dry-run --file urls.yaml
+
+# Test with custom quality settings
+python video_downloader.py --dry-run --quality medium "https://example.com/video"
+```
+
 ### Delay Configuration
 Control download speed to avoid rate limiting:
 ```bash
@@ -220,6 +288,86 @@ python video_downloader.py --output ./custom_folder "https://example.com/video"
 # Use specific config file
 python video_downloader.py --config my_config.yaml --file urls.yaml
 ```
+
+## 🐳 Docker Usage
+
+### Docker Helper Script
+
+The included `docker-run.sh` script provides convenient Docker operations:
+
+```bash
+# Build the Docker image
+./docker-run.sh build
+
+# Download videos (auto-detects config files)
+./docker-run.sh download
+./docker-run.sh download my-urls.yaml
+
+# Get video information only
+./docker-run.sh info
+./docker-run.sh info urls.yaml
+
+# Run custom commands
+./docker-run.sh run --dry-run "https://example.com/video"
+./docker-run.sh run --quality high --file urls.yaml
+
+# Interactive shell for debugging
+./docker-run.sh interactive
+
+# Start with docker-compose
+./docker-run.sh compose
+
+# Cleanup containers and images
+./docker-run.sh cleanup
+```
+
+### Manual Docker Commands
+
+If you prefer using Docker directly:
+
+```bash
+# Build image
+docker build -t video-downloader .
+
+# Run with local files
+docker run --rm \
+  -v "$(pwd)/downloads:/downloads" \
+  -v "$(pwd)/config:/app/config" \
+  -v "$(pwd):/app/local:ro" \
+  video-downloader
+
+# Run with specific options
+docker run --rm \
+  -v "$(pwd)/downloads:/downloads" \
+  -v "$(pwd)/config:/app/config" \
+  video-downloader --dry-run --quality high
+```
+
+### Docker Compose
+
+```bash
+# Start the service
+docker-compose up
+
+# Run one-shot download
+docker-compose run --rm video-downloader-oneshot
+
+# Run with specific file
+docker-compose run --rm video-downloader-oneshot -f /app/local/urls.yaml
+```
+
+### Docker Volume Mounts
+
+- `/downloads` - Where downloaded videos are saved
+- `/app/config` - Config folder (urls.yaml, config.yaml, cookies.txt)
+- `/app/local` - Read-only access to local files
+
+### Docker Benefits
+
+- **Isolated Environment**: No need to install Python dependencies locally
+- **Consistent Behavior**: Same environment across different systems
+- **Security**: Runs as non-root user with limited permissions
+- **Easy Cleanup**: Remove containers without affecting your system
 
 ## 📝 Logging
 
@@ -242,6 +390,39 @@ If you have existing JSON or TOML configuration files, refer to the migration gu
 1. **No videos downloaded**: Check if cookies.txt is present for authenticated content
 2. **Configuration not loaded**: Ensure `config.yaml` is in the same directory as the script
 3. **Network errors**: Increase delay between downloads with `--delay-seconds`
+4. **Configuration errors**: Check for correct YAML syntax and option names
+
+### Configuration Validation
+
+To verify your configuration is working correctly:
+```bash
+# Use dry-run to test configuration without downloading
+python video_downloader.py --dry-run "https://example.com/test-video"
+
+# Check if config.yaml is being loaded (should show "Loaded X configuration options")
+python video_downloader.py --info-only "https://example.com/test-video"
+
+# Docker version
+./docker-run.sh run --dry-run "https://example.com/test-video"
+```
+
+### Docker-Specific Issues
+
+1. **Permission Issues**: If you have permission issues with downloads:
+   ```bash
+   sudo chown -R 1000:1000 downloads/
+   ```
+
+2. **Container Updates**: To update after code changes:
+   ```bash
+   ./docker-run.sh cleanup
+   ./docker-run.sh build
+   ```
+
+3. **Debug Container**: For troubleshooting:
+   ```bash
+   ./docker-run.sh interactive
+   ```
 
 ### Debug Mode
 
