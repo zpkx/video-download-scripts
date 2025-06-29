@@ -4,16 +4,16 @@ A powerful and flexible video downloader built with yt-dlp, featuring YAML-based
 
 ## ✨ Features
 
-- **YAML Configuration**: Easy-to-edit configuration files for both URLs and yt-dlp options
-- **Auto-Configuration**: Automatically detects and loads `config.yaml` if present
-- **Categorized Downloads**: Organize downloads into categories with separate output directories
-- **Flexible Input**: Support for both YAML config files and plain text URL lists
+- **YAML Configuration**: Easily edit both URL lists and yt-dlp options using YAML files
+- **Auto-Configuration**: Automatically detects and loads `config.yaml` and `urls.yaml` if present
+- **Categorized Downloads**: Organize downloads by category, each with its own output directory and settings
+- **Flexible Input**: Support for both YAML config files and command-line URLs
 - **Info-Only Mode**: Extract video metadata without downloading
-- **Dry-Run Mode**: Preview what would be downloaded without actually downloading
-- **Docker Support**: Containerized deployment with helper scripts
-- **Delay Management**: Configurable delays between downloads to avoid rate limiting
-- **Cookie Support**: Automatic detection of cookie files for authenticated content
-- **Comprehensive Logging**: Detailed logs for monitoring download progress
+- **Dry-Run Mode**: Preview downloads without saving files
+- **Docker Support**: Containerized deployment with helper scripts and Docker Compose
+- **Delay Management**: Configurable random delays between downloads to avoid rate limiting
+- **Cookie Support**: Automatically detects cookie files for authenticated downloads
+- **Comprehensive Logging**: Detailed logs for monitoring progress, errors, and configuration loading
 
 ## 🚀 Quick Start
 
@@ -54,9 +54,6 @@ python video_downloader.py "https://example.com/video"
 
 # Download from YAML config file
 python video_downloader.py --file urls.yaml
-
-# Download from plain text file
-python video_downloader.py --file urls.txt
 
 # Get video info only (no download)
 python video_downloader.py --info-only "https://example.com/video"
@@ -129,13 +126,20 @@ writethumbnail: true
 ignoreerrors: true
 retries: 3
 fragment_retries: 3
+
+# Cookie file (optional) - can be specified directly or in global_settings
+# cookiefile: "path/to/your/cookies.txt"
+
+# Alternative: specify in global_settings section
+# global_settings:
+#   cookies_file: "config/cookies.txt"
 ```
 
 ## 📖 Command Line Options
 
 ```
 usage: video_downloader.py [-h] [-f FILE] [-o OUTPUT] 
-                          [-q {low,medium,high,best}] [--delay-seconds DELAY_SECONDS]
+                          [-q {low,medium,high,best}] [--delay-min DELAY_MIN]
                           [--delay-max DELAY_MAX] [--info-only] [--dry-run] [--config CONFIG]
                           [urls ...]
 
@@ -144,12 +148,12 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  -f FILE, --file FILE  YAML config file or plain text URLs file
+  -f FILE, --file FILE  YAML config file with URLs and settings
   -o OUTPUT, --output OUTPUT
                         Output directory (default: ./downloads)
   -q {low,medium,high,best}, --quality {low,medium,high,best}
                         Video quality (default: best)
-  --delay-seconds DELAY_SECONDS
+  --delay-min DELAY_MIN
                         Minimum delay between downloads in seconds (default: 5)
   --delay-max DELAY_MAX
                         Maximum delay between downloads in seconds (default: 15)
@@ -239,15 +243,12 @@ video-download-scripts/
 ## 🔧 Configuration Files
 
 ### Supported Cookie Files
-The script automatically detects cookies from these locations:
-- `cookies.txt`
-- `www.bilibili.com_cookies.txt`
-- `~/cookies.txt`
-- `~/Downloads/cookies.txt`
+The script automatically detects cookies from these locations in order:
+1. Path specified in `config.yaml` under `cookiefile` setting
+2. Path specified in `config.yaml` under `global_settings.cookies_file` 
+3. `config/cookies.txt` (default location)
 
-### Legacy Support
-- Plain text URL files (`.txt`) are still supported
-- Existing workflows will continue to work
+If no cookies file is found, some authenticated content may not be accessible.
 
 ## 📋 Quality Options
 
@@ -275,7 +276,7 @@ python video_downloader.py --dry-run --quality medium "https://example.com/video
 Control download speed to avoid rate limiting:
 ```bash
 # 5-15 second random delays
-python video_downloader.py --delay-seconds 5 --delay-max 15 --file urls.yaml
+python video_downloader.py --delay-min 5 --delay-max 15 --file urls.yaml
 ```
 
 ### Custom Output Directories
@@ -389,8 +390,15 @@ If you have existing JSON or TOML configuration files, refer to the migration gu
 
 1. **No videos downloaded**: Check if cookies.txt is present for authenticated content
 2. **Configuration not loaded**: Ensure `config.yaml` is in the same directory as the script
-3. **Network errors**: Increase delay between downloads with `--delay-seconds`
+3. **Network errors**: Increase delay between downloads with `--delay-min` and `--delay-max`
 4. **Configuration errors**: Check for correct YAML syntax and option names
+5. **URLs ignored when using file**: When both `--file` and URLs are specified, only the file is processed
+
+### Auto-Detection Behavior
+
+- **With URLs specified**: `config/urls.yaml` is not auto-detected, only specified URLs are processed
+- **Without URLs**: `config/urls.yaml` is auto-detected if present
+- **With --file specified**: The specified file takes priority over any URLs or auto-detection
 
 ### Configuration Validation
 

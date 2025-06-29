@@ -379,7 +379,7 @@ def process_categorized_downloads(
         quality = category_data.get("quality", args.quality)
         delay_range = tuple(
             category_data.get(
-                "delay_range", [args.delay_seconds, args.delay_max])
+                "delay_range", [args.delay_min, args.delay_max])
         )
 
         print(f"\n{'='*60}")
@@ -501,7 +501,7 @@ def main():
         help="Video quality",
     )
     parser.add_argument(
-        "--delay-seconds",
+        "--delay-min",
         type=int,
         default=5,
         help="Minimum delay between downloads (seconds)",
@@ -558,8 +558,8 @@ def main():
         if categories:
             logger.info(
                 f"Loaded YAML config with {len(categories)} categories")
-    else:
-        # Auto-detect urls.yaml from config directory only
+    elif not urls:
+        # Auto-detect urls.yaml from config directory only if no URLs provided
         config_urls_file = "config/urls.yaml"
         if os.path.exists(config_urls_file):
             logger.info(f"Auto-detected URLs file: {config_urls_file}")
@@ -602,7 +602,7 @@ def main():
             # Download videos
             result = downloader.download_videos(
                 urls, args.output, args.quality, (
-                    args.delay_seconds, args.delay_max), args.dry_run
+                    args.delay_min, args.delay_max), args.dry_run
             )
 
             # Print summary
