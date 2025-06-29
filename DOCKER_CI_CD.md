@@ -14,7 +14,7 @@ GitHub Action 会在以下情况下自动运行：
 
 ### 构建的镜像
 
-- **镜像名称**: `ghcr.io/{你的用户名}/{仓库名}/downloader-watcher`
+- **镜像名称**: `ghcr.io/{你的用户名}/{仓库名}/video-download-watcher`
 - **支持平台**: `linux/amd64`, `linux/arm64`
 - **标签策略**:
   - `latest` - 最新的主分支构建
@@ -28,10 +28,10 @@ GitHub Action 会在以下情况下自动运行：
 
 ```bash
 # 拉取最新版本
-docker pull ghcr.io/{你的用户名}/{仓库名}/downloader-watcher:latest
+docker pull ghcr.io/{你的用户名}/{仓库名}/video-download-watcher:latest
 
 # 拉取特定版本
-docker pull ghcr.io/{你的用户名}/{仓库名}/downloader-watcher:v1.0.0
+docker pull ghcr.io/{你的用户名}/{仓库名}/video-download-watcher:v1.0.0
 ```
 
 ### 2. 更新 docker-compose.yml
@@ -40,10 +40,10 @@ docker pull ghcr.io/{你的用户名}/{仓库名}/downloader-watcher:v1.0.0
 
 ```yaml
 services:
-  video-downloader-watcher:
-    image: ghcr.io/{你的用户名}/{仓库名}/downloader-watcher:latest
+  video-video-download-watcher:
+    image: ghcr.io/{你的用户名}/{仓库名}/video-download-watcher:latest
     # 移除或注释掉 'build: .' 这一行
-    container_name: video-downloader-watcher
+    container_name: video-video-download-watcher
     volumes:
       - ./downloads:/app/downloads
       - ./config:/app/config
@@ -60,17 +60,17 @@ services:
 ```bash
 # 运行文件监控器
 docker run -d \
-  --name video-downloader-watcher \
+  --name video-video-download-watcher \
   -v $(pwd)/downloads:/app/downloads \
   -v $(pwd)/config:/app/config \
-  ghcr.io/{你的用户名}/{仓库名}/downloader-watcher:latest \
+  ghcr.io/{你的用户名}/{仓库名}/video-download-watcher:latest \
   /bin/bash /app/watch-and-download.sh
 
 # 运行单次下载
 docker run --rm \
   -v $(pwd)/downloads:/app/downloads \
   -v $(pwd)/config:/app/config \
-  ghcr.io/{你的用户名}/{仓库名}/downloader-watcher:latest \
+  ghcr.io/{你的用户名}/{仓库名}/video-download-watcher:latest \
   -f /app/config/urls.yaml
 ```
 
@@ -136,7 +136,7 @@ GitHub Action 使用 `GITHUB_TOKEN` 来推送镜像到 GitHub Container Registry
 2. GitHub Action 会自动构建并发布新版本的镜像
 
 3. 你可以在 GitHub 包页面查看发布的镜像：
-   `https://github.com/{你的用户名}/{仓库名}/pkgs/container/downloader-watcher`
+   `https://github.com/{你的用户名}/{仓库名}/pkgs/container/video-download-watcher`
 
 ## 🛠️ 故障排除
 

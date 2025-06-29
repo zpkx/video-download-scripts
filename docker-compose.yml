@@ -1,8 +1,8 @@
 services:
   # File watcher service that monitors urls.yaml for changes
-  video-downloader-watcher:
+  video-download-watcher:
     build: .
-    container_name: video-downloader-watcher
+    container_name: video-download-watcher
     volumes:
       # Mount downloads directory
       - ./downloads:/app/downloads
