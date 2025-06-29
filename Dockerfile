@@ -14,8 +14,8 @@ RUN apt-get update && apt-get install -y \
 
 # Create a non-root user
 RUN useradd -m -u 1000 downloader && \
-    mkdir -p /app /downloads /config && \
-    chown -R downloader:downloader /app /downloads /config
+    mkdir -p /app && \
+    chown -R downloader:downloader /app
 
 # Set working directory
 WORKDIR /app
@@ -29,19 +29,9 @@ COPY video_downloader.py .
 
 # Copy config files from config folder (if they exist)
 COPY config/ ./config/
-# Also copy any root-level config files for backward compatibility
-COPY config.yaml* ./
-COPY urls.yaml* ./
-COPY cookies.txt* ./
-
-# Make video_downloader.py executable
-RUN chmod +x video_downloader.py
 
 # Switch to non-root user
 USER downloader
-
-# Create volumes for persistent data
-VOLUME ["/downloads", "/config"]
 
 # Set default command
 ENTRYPOINT ["python3", "/app/video_downloader.py"]

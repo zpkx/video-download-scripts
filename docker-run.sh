@@ -50,7 +50,7 @@ compose_up() {
 run_oneshot() {
     log_info "Running one-shot command: $*"
     docker run --rm \
-        -v "$SCRIPT_DIR/downloads:/downloads" \
+        -v "$SCRIPT_DIR/downloads:/app/downloads" \
         -v "$SCRIPT_DIR/config:/app/config" \
         -v "$SCRIPT_DIR:/app/local:ro" \
         "$IMAGE_NAME" "$@"
@@ -60,7 +60,7 @@ run_oneshot() {
 run_interactive() {
     log_info "Starting interactive container..."
     docker run --rm -it \
-        -v "$SCRIPT_DIR/downloads:/downloads" \
+        -v "$SCRIPT_DIR/downloads:/app/downloads" \
         -v "$SCRIPT_DIR/config:/app/config" \
         -v "$SCRIPT_DIR:/app/local:ro" \
         --entrypoint /bin/bash \
@@ -79,7 +79,7 @@ download_from_file() {
             exit 1
         fi
         docker run --rm \
-            -v "$SCRIPT_DIR/downloads:/downloads" \
+            -v "$SCRIPT_DIR/downloads:/app/downloads" \
             -v "$SCRIPT_DIR/config:/app/config" \
             -v "$SCRIPT_DIR:/app/local:ro" \
             "$IMAGE_NAME" -f "/app/local/$file_path"
@@ -87,7 +87,7 @@ download_from_file() {
         # Auto-detect config files (no -f argument needed)
         log_info "Auto-detecting configuration files..."
         docker run --rm \
-            -v "$SCRIPT_DIR/downloads:/downloads" \
+            -v "$SCRIPT_DIR/downloads:/app/downloads" \
             -v "$SCRIPT_DIR/config:/app/config" \
             -v "$SCRIPT_DIR:/app/local:ro" \
             "$IMAGE_NAME"
