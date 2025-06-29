@@ -10,7 +10,7 @@ writesubtitles: true
 writeautomaticsub: true
 subtitleslangs: ["zh-CN", "zh-TW", "en"]
 embed_subs: true
-writedesctription: true
+writedescription: true
 writethumbnail: true
 
 # 错误处理和重试设置

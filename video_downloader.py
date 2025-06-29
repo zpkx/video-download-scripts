@@ -40,19 +40,27 @@ class VideoDownloader:
             "extractaudio": False,
             "audioformat": "mp3",
             "embed_subs": True,
-            "writedesctription": True,
+            "writedescription": True,
             "writethumbnail": True,
         }
 
     def _get_cookies_file(self) -> Optional[str]:
         """Get cookies file from config directory"""
+        # First try to get from user config
+        if "cookiefile" in self.config:
+            cookies_path = self.config["cookiefile"]
+            if os.path.exists(cookies_path):
+                logger.info(f"Found cookies file from config: {cookies_path}")
+                return cookies_path
+
+        # Fallback to default path
         cookies_path = "config/cookies.txt"
         if os.path.exists(cookies_path):
             logger.info(f"Found cookies file: {cookies_path}")
             return cookies_path
 
         logger.warning(
-            "No cookies file found in config directory. Some videos may not be accessible.")
+            "No cookies file found. Some videos may not be accessible.")
         return None
 
     def _create_output_template(self, output_dir: str) -> str:
@@ -65,6 +73,7 @@ class VideoDownloader:
         output_dir: str = "./downloads",
         quality: str = "best",
         delay_range: tuple = (5, 10),
+        dry_run: bool = False,
     ) -> Dict[str, List[str]]:
         """
         Download videos from URLs
@@ -74,6 +83,7 @@ class VideoDownloader:
             output_dir: Output directory for downloads
             quality: Video quality preference
             delay_range: Range for random delays between downloads
+            dry_run: If True, only show what would be downloaded without actually downloading
 
         Returns:
             Dictionary with:
@@ -127,20 +137,59 @@ class VideoDownloader:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             for i, url in enumerate(urls, 1):
                 try:
-                    logger.info(f"Downloading video {i}/{len(urls)}: {url}")
-                    ydl.download([url])
-                    successful_downloads.append(url)
-                    logger.info(f"Successfully downloaded: {url}")
+                    if dry_run:
+                        logger.info(
+                            f"[DRY RUN] Would download video {i}/{len(urls)}: {url}")
+                        # Extract info to show what would be downloaded
+                        info = ydl.extract_info(url, download=False)
+                        if info:
+                            title = info.get('title', 'Unknown')
+                            duration = info.get('duration')
+                            if duration is not None:
+                                try:
+                                    duration_str = f"{int(duration)//60}:{int(duration) % 60:02d}"
+                                except (ValueError, TypeError):
+                                    duration_str = "Unknown"
+                            else:
+                                duration_str = "Unknown"
+                            filesize = info.get('filesize') or info.get(
+                                'filesize_approx')
+                            filesize_str = f"{filesize/1024/1024:.1f}MB" if filesize else "Unknown size"
+
+                            logger.info(f"[DRY RUN] Title: {title}")
+                            logger.info(f"[DRY RUN] Duration: {duration_str}")
+                            logger.info(f"[DRY RUN] Size: {filesize_str}")
+                            logger.info(
+                                f"[DRY RUN] Would save to: {output_dir}")
+
+                            # Simulate successful download for dry run
+                            downloaded_files.append({
+                                "url": url,
+                                "file_path": os.path.join(output_dir, f"{title}.mp4"),
+                                "title": title,
+                            })
+                        successful_downloads.append(url)
+                    else:
+                        logger.info(
+                            f"Downloading video {i}/{len(urls)}: {url}")
+                        ydl.download([url])
+                        successful_downloads.append(url)
+                        logger.info(f"Successfully downloaded: {url}")
 
                     # Add delay between downloads to avoid rate limiting
                     if i < len(urls):
                         delay = random.randint(*delay_range)
-                        logger.info(
-                            f"Waiting {delay} seconds before next download...")
-                        time.sleep(delay)
+                        if dry_run:
+                            logger.info(
+                                f"[DRY RUN] Would wait {delay} seconds before next download...")
+                        else:
+                            logger.info(
+                                f"Waiting {delay} seconds before next download...")
+                            time.sleep(delay)
 
                 except Exception as e:
-                    logger.error(f"Error downloading {url}: {e}")
+                    logger.error(
+                        f"Error {'simulating' if dry_run else 'downloading'} {url}: {e}")
                     failed_downloads.append(url)
 
         return {
@@ -186,6 +235,11 @@ def parse_config_file(file_path: str) -> Dict[str, Any]:
     for key, value in config.items():
         if key not in ["categories", "global_settings"]:
             ytdlp_config[key] = value
+
+    # Handle global_settings cookies_file
+    global_settings = config.get("global_settings", {})
+    if "cookies_file" in global_settings and "cookiefile" not in ytdlp_config:
+        ytdlp_config["cookiefile"] = global_settings["cookies_file"]
 
     return ytdlp_config
 
@@ -234,7 +288,7 @@ def load_categorized_urls(file_path: str) -> Dict[str, Dict[str, Any]]:
 
 
 def download_by_categories(
-    downloader: "VideoDownloader", categories: Dict[str, Dict[str, Any]]
+    downloader: "VideoDownloader", categories: Dict[str, Dict[str, Any]], dry_run: bool = False
 ) -> Dict[str, Any]:
     """Download videos organized by categories"""
     total_results = {"successful": [], "failed": [], "category_results": {}}
@@ -281,7 +335,7 @@ def download_by_categories(
 
         # Download videos for this category
         result = temp_downloader.download_videos(
-            urls, output_dir, quality, delay_range)
+            urls, output_dir, quality, delay_range, dry_run)
 
         # Store category results
         total_results["category_results"][category_name] = result
@@ -380,7 +434,7 @@ def process_categorized_downloads(
 
             # Download videos for this category
             result = temp_downloader.download_videos(
-                urls, output_path, quality, delay_range
+                urls, output_path, quality, delay_range, args.dry_run
             )
 
             category_results[category_name] = result
@@ -460,6 +514,9 @@ def main():
     )
     parser.add_argument(
         "--info-only", action="store_true", help="Extract video info only (no download)"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Show what would be downloaded without actually downloading"
     )
     parser.add_argument(
         "--config",
@@ -545,25 +602,35 @@ def main():
             # Download videos
             result = downloader.download_videos(
                 urls, args.output, args.quality, (
-                    args.delay_seconds, args.delay_max)
+                    args.delay_seconds, args.delay_max), args.dry_run
             )
 
             # Print summary
             print(f"\n{'='*50}")
-            print("Download Summary:")
-            print(f"Successful: {len(result['successful'])}")
+            if args.dry_run:
+                print("Dry Run Summary:")
+                print(f"Would download: {len(result['successful'])}")
+            else:
+                print("Download Summary:")
+                print(f"Successful: {len(result['successful'])}")
             if len(result["failed"]) > 0:
                 print(f"Failed: {len(result['failed'])}")
 
             # Print downloaded files with full paths
             if result.get("downloaded_files"):
-                print("\n📁 Downloaded files:")
+                if args.dry_run:
+                    print("\n📁 Would download files:")
+                else:
+                    print("\n📁 Downloaded files:")
                 for file_info in result["downloaded_files"]:
                     print(f"  📄 {file_info['title']}")
                     print(f"     🔗 {file_info['file_path']}")
 
             if result["failed"]:
-                print("\nFailed downloads:")
+                if args.dry_run:
+                    print("\nFailed simulations:")
+                else:
+                    print("\nFailed downloads:")
                 for url in result["failed"]:
                     print(f"  - {url}")
 
