@@ -7,22 +7,20 @@ import json
 from typing import List, Optional, Dict, Any
 import time
 import random
-from pathlib import Path
 import yaml
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("video_download.log"), logging.StreamHandler()],
+    handlers=[logging.FileHandler(
+        "video_download.log"), logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
 
 
 class VideoDownloader:
-    """Enhanced vide        print(f"{'='*60}")
-    print("🎯 OVERALL DOWNLOAD SUMMARY")
-    print(f"{'='*60}")ownloader using yt-dlp with improved features"""
+    """Simplified video downloader using yt-dlp with config-based setup"""
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
@@ -47,44 +45,14 @@ class VideoDownloader:
         }
 
     def _get_cookies_file(self) -> Optional[str]:
-        """Find cookies file in common locations"""
-        possible_paths = [
-            "config/cookies.txt",  # Check config folder first
-            "cookies.txt",
-            os.path.expanduser("~/cookies.txt"),
-            os.path.expanduser("~/Downloads/cookies.txt"),
-        ]
+        """Get cookies file from config directory"""
+        cookies_path = "config/cookies.txt"
+        if os.path.exists(cookies_path):
+            logger.info(f"Found cookies file: {cookies_path}")
+            return cookies_path
 
-        for path in possible_paths:
-            if os.path.exists(path):
-                logger.info(f"Found cookies file: {path}")
-                return path
-
-        logger.warning("No cookies file found. Some videos may not be accessible.")
-        return None
-
-    def _get_ffmpeg_location(self) -> Optional[str]:
-        """Find ffmpeg installation"""
-        # Check if ffmpeg is in PATH
-        import shutil
-
-        ffmpeg_path = shutil.which("ffmpeg")
-        if ffmpeg_path:
-            return ffmpeg_path
-
-        # Check common installation paths
-        common_paths = [
-            "/usr/local/bin/ffmpeg",
-            "/opt/homebrew/bin/ffmpeg",  # macOS with Homebrew
-            "C:\\ffmpeg\\bin\\ffmpeg.exe",  # Windows
-            "D:\\tools\\ffmpeg\\bin\\ffmpeg.exe",  # Windows alternative
-        ]
-
-        for path in common_paths:
-            if os.path.exists(path):
-                return path
-
-        logger.warning("FFmpeg not found. Video processing may be limited.")
+        logger.warning(
+            "No cookies file found in config directory. Some videos may not be accessible.")
         return None
 
     def _create_output_template(self, output_dir: str) -> str:
@@ -128,11 +96,6 @@ class VideoDownloader:
         if cookies_file:
             ydl_opts["cookiefile"] = cookies_file
 
-        # Set ffmpeg location if available
-        ffmpeg_location = self._get_ffmpeg_location()
-        if ffmpeg_location:
-            ydl_opts["ffmpeg_location"] = os.path.dirname(ffmpeg_location)
-
         # Adjust quality settings
         if quality == "high":
             ydl_opts["format"] = "bestvideo[height>=1080]+bestaudio/best"
@@ -172,7 +135,8 @@ class VideoDownloader:
                     # Add delay between downloads to avoid rate limiting
                     if i < len(urls):
                         delay = random.randint(*delay_range)
-                        logger.info(f"Waiting {delay} seconds before next download...")
+                        logger.info(
+                            f"Waiting {delay} seconds before next download...")
                         time.sleep(delay)
 
                 except Exception as e:
@@ -203,104 +167,6 @@ class VideoDownloader:
         except Exception as e:
             logger.error(f"Error extracting info for {url}: {e}")
             return None
-
-
-def load_urls_from_file(file_path: str) -> List[str]:
-    """Load URLs from a text file"""
-    urls = []
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#"):
-                    urls.append(line)
-        logger.info(f"Loaded {len(urls)} URLs from {file_path}")
-    except Exception as e:
-        logger.error(f"Error loading URLs from file: {e}")
-
-    return urls
-
-
-def load_categorized_urls_from_file(file_path: str) -> Dict[str, Dict[str, Any]]:
-    """
-    Load URLs organized by categories from a text file
-
-    Format:
-    # [Category Name] output_path=/path/to/save
-    # or just
-    # [Category Name]
-    https://url1
-    https://url2
-
-    Returns:
-        Dict with category names as keys and dict containing 'urls' and 'output_path'
-    """
-    categories = {}
-    current_category = "Default"
-    current_output_path = "./downloads"
-
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-
-                # Check for category header
-                if line.startswith("#") and "[" in line and "]" in line:
-                    # Extract category name
-                    start = line.find("[") + 1
-                    end = line.find("]")
-                    if start > 0 and end > start:
-                        category_name = line[start:end].strip()
-                        current_category = category_name
-
-                        # Check for output path specification
-                        if "output_path=" in line:
-                            path_start = line.find("output_path=") + 12
-                            current_output_path = line[path_start:].strip()
-                        else:
-                            current_output_path = f"./downloads/{category_name}"
-
-                        # Initialize category if not exists
-                        if current_category not in categories:
-                            categories[current_category] = {
-                                "urls": [],
-                                "output_path": current_output_path,
-                            }
-                        else:
-                            categories[current_category][
-                                "output_path"
-                            ] = current_output_path
-
-                # Skip other comments
-                elif line.startswith("#"):
-                    continue
-
-                # Process URL
-                else:
-                    if current_category not in categories:
-                        categories[current_category] = {
-                            "urls": [],
-                            "output_path": current_output_path,
-                        }
-                    categories[current_category]["urls"].append(line)
-
-        # Log summary
-        total_urls = sum(len(cat["urls"]) for cat in categories.values())
-        logger.info(
-            f"Loaded {total_urls} URLs in {len(categories)} categories from {file_path}"
-        )
-        for cat_name, cat_data in categories.items():
-            logger.info(
-                f"  - {cat_name}: {len(cat_data['urls'])} URLs → {cat_data['output_path']}"
-            )
-
-    except Exception as e:
-        logger.error(f"Error loading categorized URLs from file: {e}")
-        return {"Default": {"urls": [], "output_path": "./downloads"}}
-
-    return categories
 
 
 def parse_config_file(file_path: str) -> Dict[str, Any]:
@@ -359,8 +225,10 @@ def load_categorized_urls(file_path: str) -> Dict[str, Dict[str, Any]]:
 
         # Set default output path if not specified
         if "output_path" not in category_data:
-            default_output = global_settings.get("default_output_path", "./downloads")
-            category_data["output_path"] = os.path.join(default_output, category_name)
+            default_output = global_settings.get(
+                "default_output_path", "./downloads")
+            category_data["output_path"] = os.path.join(
+                default_output, category_name)
 
     return categories
 
@@ -412,7 +280,8 @@ def download_by_categories(
         temp_downloader = VideoDownloader(category_downloader_config)
 
         # Download videos for this category
-        result = temp_downloader.download_videos(urls, output_dir, quality, delay_range)
+        result = temp_downloader.download_videos(
+            urls, output_dir, quality, delay_range)
 
         # Store category results
         total_results["category_results"][category_name] = result
@@ -451,10 +320,12 @@ def process_categorized_downloads(
             logger.info(f"No URLs in category '{category_name}', skipping...")
             continue
 
-        output_path = category_data.get("output_path", f"./downloads/{category_name}")
+        output_path = category_data.get(
+            "output_path", f"./downloads/{category_name}")
         quality = category_data.get("quality", args.quality)
         delay_range = tuple(
-            category_data.get("delay_range", [args.delay_seconds, args.delay_max])
+            category_data.get(
+                "delay_range", [args.delay_seconds, args.delay_max])
         )
 
         print(f"\n{'='*60}")
@@ -563,7 +434,7 @@ def main():
     parser.add_argument(
         "-f",
         "--file",
-        help="YAML config file or plain text URLs file (auto-detects config/urls.yaml if not specified)",
+        help="YAML config file with URLs and settings (auto-detects config/urls.yaml if not specified)",
     )
     parser.add_argument(
         "-o", "--output", default="./downloads", help="Output directory"
@@ -601,19 +472,13 @@ def main():
     config = {}
     config_file = args.config
 
-    # Auto-detect config.yaml if no config specified
+    # Auto-detect config.yaml from config directory only
     if not config_file:
-        possible_config_files = [
-            "config/config.yaml",
-            "config/config.yml",
-            "config.yaml",
-            "config.yml",
-        ]
-        for possible_file in possible_config_files:
-            if os.path.exists(possible_file):
-                config_file = possible_file
-                logger.info(f"Auto-detected config file: {config_file}")
-                break
+        config_file = "config/config.yaml"
+        if os.path.exists(config_file):
+            logger.info(f"Auto-detected config file: {config_file}")
+        else:
+            config_file = None
 
     # Load the config file if found
     if config_file and os.path.exists(config_file):
@@ -631,39 +496,20 @@ def main():
     categories = {}
 
     if args.file:
-        # Auto-detect file format
-        file_path = Path(args.file)
-        if file_path.suffix.lower() in [".yaml", ".yml"]:
-            # Load YAML config file
-            categories = load_categorized_urls(args.file)
-            if categories:
-                logger.info(f"Loaded YAML config with {len(categories)} categories")
-        else:
-            # Load plain text URLs file
-            urls.extend(load_urls_from_file(args.file))
+        # Load YAML config file
+        categories = load_categorized_urls(args.file)
+        if categories:
+            logger.info(
+                f"Loaded YAML config with {len(categories)} categories")
     else:
-        # Auto-detect urls.yaml if no file specified
-        possible_url_files = [
-            "config/urls.yaml",
-            "config/urls.yml",
-            "urls.yaml",
-            "urls.yml",
-        ]
-        for possible_file in possible_url_files:
-            if os.path.exists(possible_file):
-                logger.info(f"Auto-detected URLs file: {possible_file}")
-                file_path = Path(possible_file)
-                if file_path.suffix.lower() in [".yaml", ".yml"]:
-                    # Load YAML config file
-                    categories = load_categorized_urls(possible_file)
-                    if categories:
-                        logger.info(
-                            f"Loaded YAML config with {len(categories)} categories"
-                        )
-                else:
-                    # Load plain text URLs file
-                    urls.extend(load_urls_from_file(possible_file))
-                break
+        # Auto-detect urls.yaml from config directory only
+        config_urls_file = "config/urls.yaml"
+        if os.path.exists(config_urls_file):
+            logger.info(f"Auto-detected URLs file: {config_urls_file}")
+            categories = load_categorized_urls(config_urls_file)
+            if categories:
+                logger.info(
+                    f"Loaded YAML config with {len(categories)} categories")
 
     if not urls and not categories:
         logger.error("No URLs provided. Use --help for usage information.")
@@ -686,7 +532,8 @@ def main():
                     print(f"\n{'='*80}")
                     print("RAW INFO OBJECT:")
                     print(f"{'='*80}")
-                    print(json.dumps(info, indent=2, ensure_ascii=False, default=str))
+                    print(json.dumps(info, indent=2,
+                          ensure_ascii=False, default=str))
                     print(f"{'='*80}")
 
                     print(f"\nTitle: {info.get('title', 'N/A')}")
@@ -697,7 +544,8 @@ def main():
         else:
             # Download videos
             result = downloader.download_videos(
-                urls, args.output, args.quality, (args.delay_seconds, args.delay_max)
+                urls, args.output, args.quality, (
+                    args.delay_seconds, args.delay_max)
             )
 
             # Print summary
