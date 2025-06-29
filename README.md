@@ -78,7 +78,7 @@ python video_downloader.py --dry-run "https://example.com/video"
 
 ### Auto-Configuration
 
-The script automatically looks for `config.yaml` or `config.yml` in the current directory and loads yt-dlp options from it. No need to specify the config file manually!
+The script automatically looks for `config.yaml` or `config.yml` in the `config/` directory and loads yt-dlp options from it. No need to specify the config file manually!
 
 ### YAML Configuration Format
 
@@ -136,31 +136,27 @@ fragment_retries: 3
 ```
 
 ## 📖 Command Line Options
+### Command Line Arguments
 
-```
-usage: video_downloader.py [-h] [-f FILE] [-o OUTPUT] 
-                          [-q {low,medium,high,best}] [--delay-min DELAY_MIN]
-                          [--delay-max DELAY_MAX] [--info-only] [--dry-run] [--config CONFIG]
-                          [urls ...]
+The script supports the following command line arguments:
 
-positional arguments:
-  urls                  Video URLs to download
+| Argument                  | Description                                                      | Default                |
+|---------------------------|------------------------------------------------------------------|------------------------|
+| `urls`                    | One or more video URLs to download                               |                        |
+| `-h`, `--help`            | Show help message and exit                                       |                        |
+| `-f FILE`, `--file FILE`  | YAML file with categorized URLs and settings                     |                        |
+| `-o OUTPUT`, `--output OUTPUT` | Output directory for downloads                           | `./downloads`          |
+| `-q {low,medium,high,best}`, `--quality {low,medium,high,best}` | Video quality         | `best`                 |
+| `--delay-min DELAY_MIN`   | Minimum delay (seconds) between downloads                        | `5`                    |
+| `--delay-max DELAY_MAX`   | Maximum delay (seconds) between downloads                        | `15`                   |
+| `--info-only`             | Extract video info only (no download)                            |                        |
+| `--dry-run`               | Show what would be downloaded without downloading                |                        |
+| `--config CONFIG`         | YAML config file for yt-dlp options (auto-detects `config.yaml`) |                        |
 
-options:
-  -h, --help            show this help message and exit
-  -f FILE, --file FILE  YAML config file with URLs and settings
-  -o OUTPUT, --output OUTPUT
-                        Output directory (default: ./downloads)
-  -q {low,medium,high,best}, --quality {low,medium,high,best}
-                        Video quality (default: best)
-  --delay-min DELAY_MIN
-                        Minimum delay between downloads in seconds (default: 5)
-  --delay-max DELAY_MAX
-                        Maximum delay between downloads in seconds (default: 15)
-  --info-only           Extract video info only (no download)
-  --dry-run             Show what would be downloaded without actually downloading
-  --config CONFIG       YAML config file for yt-dlp options (auto-detects config.yaml)
-```
+**Notes:**
+- If both URLs and `--file` are specified, only the file is processed.
+- If neither URLs nor `--file` are specified, the script auto-detects `config/urls.yaml` if present.
+- Use `--info-only` or `--dry-run` for non-destructive operations.
 
 ## 🎯 Usage Examples
 
@@ -378,18 +374,12 @@ All download activities are logged to `video_download.log` with timestamps and d
 - Configuration loading
 - File detection
 
-## 🔄 Migration from JSON/TOML
-
-If you have existing JSON or TOML configuration files, refer to the migration guides:
-- `JSON_TO_YAML_MIGRATION.md` - Step-by-step migration guide
-- `YAML_GUIDE.md` - Complete YAML configuration reference
-
 ## 🚨 Troubleshooting
 
 ### Common Issues
 
-1. **No videos downloaded**: Check if cookies.txt is present for authenticated content
-2. **Configuration not loaded**: Ensure `config.yaml` is in the same directory as the script
+1. **No videos downloaded**: Ensure that `cookies.txt` is present in the `config/` directory if downloading from sites that require authentication. Also, verify that your URLs are correct and accessible.
+2. **Configuration not loaded**: Make sure `config.yaml` is located in the `config/` directory, as the script auto-loads configuration from `config/config.yaml` or `config/config.yml`
 3. **Network errors**: Increase delay between downloads with `--delay-min` and `--delay-max`
 4. **Configuration errors**: Check for correct YAML syntax and option names
 5. **URLs ignored when using file**: When both `--file` and URLs are specified, only the file is processed
@@ -409,9 +399,6 @@ python video_downloader.py --dry-run "https://example.com/test-video"
 
 # Check if config.yaml is being loaded (should show "Loaded X configuration options")
 python video_downloader.py --info-only "https://example.com/test-video"
-
-# Docker version
-./docker-run.sh run --dry-run "https://example.com/test-video"
 ```
 
 ### Docker-Specific Issues
