@@ -2,7 +2,7 @@ services:
   # File watcher service that monitors urls.yaml for changes
   video-download-watcher:
     # build: .
-    image: ghcr.io/zpkx/video-downloader/video-download-watcher:latest
+    image: ghcr.io/zpkx/video-downloader/video-downloader:latest
     container_name: video-download-watcher
     user: "${USER_UID:-1000}:${USER_GID:-1000}"
     volumes:
