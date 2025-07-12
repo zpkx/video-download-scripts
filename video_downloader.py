@@ -69,6 +69,29 @@ class VideoDownloader:
         """Create output template with better naming"""
         return os.path.join(output_dir, "%(title)s.%(ext)s")
 
+    def _format_video_info(self, info: Dict[str, Any]) -> Dict[str, str]:
+        """Format video information for logging"""
+        result = {
+            "title": info.get("title", "Unknown"),
+            "filesize_str": "Unknown size",
+            "duration_str": "Unknown",
+        }
+
+        # Format duration
+        duration = info.get("duration")
+        if duration is not None:
+            try:
+                result["duration_str"] = f"{int(duration)//60}:{int(duration) % 60:02d}"
+            except (ValueError, TypeError):
+                pass
+
+        # Format file size
+        filesize = info.get("filesize") or info.get("filesize_approx")
+        if filesize:
+            result["filesize_str"] = f"{filesize/1024/1024:.1f}MB"
+
+        return result
+
     def download_videos(
         self,
         urls: List[str],
@@ -139,36 +162,23 @@ class VideoDownloader:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             for i, url in enumerate(urls, 1):
                 try:
+                    info = None
+                    try:
+                        info = ydl.extract_info(url, download=False)
+                    except Exception as e:
+                        logger.warning(f"Could not fetch video info: {e}")
+
+                    if info:
+                        formatted_info = self._format_video_info(info)
+
                     if dry_run:
                         logger.info(
                             f"[DRY RUN] Would download video {i}/{len(urls)}: {url}"
                         )
-                        # Extract info to show what would be downloaded
-                        info = ydl.extract_info(url, download=False)
                         if info:
-                            title = info.get("title", "Unknown")
-                            duration = info.get("duration")
-                            if duration is not None:
-                                try:
-                                    duration_str = (
-                                        f"{int(duration)//60}:{int(duration) % 60:02d}"
-                                    )
-                                except (ValueError, TypeError):
-                                    duration_str = "Unknown"
-                            else:
-                                duration_str = "Unknown"
-                            filesize = info.get("filesize") or info.get(
-                                "filesize_approx"
-                            )
-                            filesize_str = (
-                                f"{filesize/1024/1024:.1f}MB"
-                                if filesize
-                                else "Unknown size"
-                            )
-
-                            logger.info(f"[DRY RUN] Title: {title}")
-                            logger.info(f"[DRY RUN] Duration: {duration_str}")
-                            logger.info(f"[DRY RUN] Size: {filesize_str}")
+                            logger.info(f"[DRY RUN] Title: {formatted_info['title']}")
+                            logger.info(f"[DRY RUN] Duration: {formatted_info['duration_str']}")
+                            logger.info(f"[DRY RUN] Size: {formatted_info['filesize_str']}")
                             logger.info(f"[DRY RUN] Would save to: {output_dir}")
 
                             # Simulate successful download for dry run
@@ -176,14 +186,19 @@ class VideoDownloader:
                                 {
                                     "url": url,
                                     "file_path": os.path.join(
-                                        output_dir, f"{title}.mp4"
+                                        output_dir, f"{formatted_info['title']}.mp4"
                                     ),
-                                    "title": title,
+                                    "title": formatted_info['title'],
                                 }
                             )
                         successful_downloads.append(url)
                     else:
                         logger.info(f"Downloading video {i}/{len(urls)}: {url}")
+                        if info:
+                            logger.info(f"Title: {formatted_info['title']}")
+                            logger.info(f"Duration: {formatted_info['duration_str']}")
+                            logger.info(f"Size: {formatted_info['filesize_str']}")
+                        
                         ydl.download([url])
                         successful_downloads.append(url)
                         logger.info(f"Successfully downloaded: {url}")
